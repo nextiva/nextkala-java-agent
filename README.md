@@ -19,7 +19,7 @@ It is expected that this library will be included and wired into a Spring Boot a
 that includes the various job definitions as well as any other REST services that are 
 desired.
    
-##Security
+## Security
 
 The NextKala agent does not implement any security on its own. It expects that the user has
 integrated Spring Security or something similar. Therefore any supplied tokens or credentials
