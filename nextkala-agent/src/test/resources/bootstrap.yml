@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: HelloTest
+
+logging:
+  config: classpath:log4j2-test.xml

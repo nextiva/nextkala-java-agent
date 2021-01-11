@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="ERROR" monitorInterval="0" name="NextKala Test">
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d [%t] %-5level: %C{1.} %msg%n%throwable" />
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Logger name="com.nextiva" level="warn"/>
+    <Logger name="org.springframework.security.access" level="INFO"/>
+    <Logger name="org.springframework.context.event" level="INFO"/>
+    <Logger name="org.springframework.beans" level="INFO"/>
+    <Logger name="org.springframework.core.env" level="INFO"/>
+    <Logger name="org.springframework.amqp" level="INFO"/>
+    <Logger name="com.nextiva.scheduling" level="TRACE"/>
+    <Root level="INFO">
+      <AppenderRef ref="Console"/>
+    </Root>
+  </Loggers>
+</Configuration>
