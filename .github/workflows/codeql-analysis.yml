@@ -61,7 +61,7 @@ jobs:
     # 📚 https://git.io/JvXDl
 
     - run: |
-        mvn -B package --file pom.xml
+        mvn -Dskip.surefire.tests=true -B package --file pom.xml
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
