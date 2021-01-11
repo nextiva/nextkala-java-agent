@@ -47,7 +47,7 @@
     <!-- Nextiva -->
     <dependency>
       <groupId>com.nextiva</groupId>
-      <artifactId>scheduling-api</artifactId>
+      <artifactId>nextkala-api</artifactId>
     </dependency>
 
     <!-- Spring -->
