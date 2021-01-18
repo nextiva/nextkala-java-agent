@@ -24,10 +24,12 @@ public interface ScheduledJob  {
 
     /**
      * Executes a job.
+     * @param jobId The job's id.
+     * @param executionid The id of the job run.
      * @param jobParams The parameters defined for the Job. May be a String containing a JSON object.
      * @return The completion status of the job.
      */
-    int executeJob(String jobParams);
+    int executeJob(String jobId, String executionid, String jobParams);
 
     /**
      * Called when a job is created to validate that the user making the request has the necessary privleges to

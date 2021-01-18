@@ -64,7 +64,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = {HelloTestApplication.class})
 public class HelloTest {
 
-    public static CountDownLatch postSignal = new CountDownLatch(2);
+    public static CountDownLatch putSignal = new CountDownLatch(2);
 
     private static final String HELLO_JOB = "/private/v1/scheduledJob/Hello";
     private static final String VALIDATE_HELLO_JOB = "/private/v1/scheduledJob/Hello/validate";
@@ -81,17 +81,18 @@ public class HelloTest {
 
     @Test
     public void testExecuteJob() throws Exception {
-        mockServer.expect(ExpectedCount.manyTimes(), method(HttpMethod.POST)).andRespond(signalWithNoContent());
+        mockServer.expect(ExpectedCount.manyTimes(), method(HttpMethod.PUT)).andRespond(signalWithNoContent());
         String body = "TestUser1";
         MvcResult result = mockMvc.perform(post(HELLO_JOB)
                 .contentType(MEDIA_TYPE)
+                .header("NextKala-JobId", "11111")
                 .header("NextKala-RunId", "12345")
                 .content(body))
                 .andDo(print())
                 .andExpect(status().isAccepted())
                 .andReturn();
-        boolean finished = postSignal.await(2, TimeUnit.SECONDS);
-        assertTrue("Two Post requests were not received", finished);
+        boolean finished = putSignal.await(2, TimeUnit.SECONDS);
+        assertTrue("Two PUT requests were not received", finished);
     }
 
     @Test
@@ -99,7 +100,6 @@ public class HelloTest {
         String body = "TestUser1";
         MvcResult result = mockMvc.perform(post(VALIDATE_HELLO_JOB)
                 .contentType(MEDIA_TYPE)
-                .header("NextKala-RunId", "12345")
                 .content(body))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -114,7 +114,6 @@ public class HelloTest {
         String body = "TestUser2";
         MvcResult result = mockMvc.perform(post(VALIDATE_HELLO_JOB)
                 .contentType(MEDIA_TYPE)
-                .header("NextKala-RunId", "12345")
                 .content(body))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -135,7 +134,7 @@ public class HelloTest {
 
         @Override
         public ClientHttpResponse createResponse(@Nullable ClientHttpRequest request) throws IOException {
-            HelloTest.postSignal.countDown();
+            HelloTest.putSignal.countDown();
             return super.createResponse(request);
         }
     }

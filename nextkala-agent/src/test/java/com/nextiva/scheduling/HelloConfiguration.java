@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
-import com.nextiva.scheduling.agent.SchedulingClient;
+import com.nextiva.scheduling.agent.SchedulerClient;
 
 /**
  * Test Configuration.
@@ -54,8 +54,8 @@ public class HelloConfiguration {
      * @return the SchedulingClient.
      */
     @Bean
-    public SchedulingClient client(MockRestServiceServer mockServer, RestTemplate restTemplate) {
+    public SchedulerClient client(MockRestServiceServer mockServer, RestTemplate restTemplate) {
         String baseUri = "http://localhost:8888/";
-        return new SchedulingClient(restTemplate, baseUri);
+        return new SchedulerClient(restTemplate, baseUri);
     }
 }
