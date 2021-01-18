@@ -17,6 +17,9 @@
 
 package com.nextiva.scheduling.agent;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
@@ -91,14 +94,98 @@ public class SchedulingClient {
     }
 
     /**
+     * Retrieve a job definition.
+     * @param id The job's id.
+     * @return the job's definition.
+     */
+    public JobDefinition getJob(String id) {
+        LOGGER.traceEntry();
+        JobDefinition result = null;
+        try {
+            String restUri = UriComponentsBuilder.fromUriString(baseUri + API_JOB_PATH)
+                    .pathSegment(URLEncoder.encode(id, StandardCharsets.UTF_8.toString())).path("/")
+                    .toUriString();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<?> entity = new HttpEntity<>(null, headers);
+            ResponseEntity<JobDefinition> response = restTemplate.exchange(restUri, HttpMethod.GET, entity,
+                    JobDefinition.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                result = response.getBody();
+            } else {
+                LOGGER.error("Call to {} returned {}", restUri, response.getStatusCode());
+            }
+        } catch (HttpStatusCodeException | UnsupportedEncodingException hsce) {
+            LOGGER.error("Unable to enable job {} due to: {}", id, hsce.getMessage());
+        }
+        LOGGER.traceExit();
+        return result;
+    }
+
+    /**
+     * Retrieve a remote job's parameters.
+     * @param id The job's id.
+     * @return the job's parameters as a String (normally JSON).
+     */
+    public String getJobParameters(String id) {
+        LOGGER.traceEntry();
+        String result = null;
+        try {
+            String restUri = UriComponentsBuilder.fromUriString(baseUri + API_JOB_PATH)
+                    .pathSegment(URLEncoder.encode(id, StandardCharsets.UTF_8.toString()))
+                    .pathSegment("params").path("/").toUriString();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<?> entity = new HttpEntity<>(null, headers);
+            ResponseEntity<String> response = restTemplate.exchange(restUri, HttpMethod.GET, entity,
+                    String.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                result = response.getBody();
+            } else {
+                LOGGER.error("Call to {} returned {}", restUri, response.getStatusCode());
+            }
+        } catch (HttpStatusCodeException | UnsupportedEncodingException hsce) {
+            LOGGER.error("Unable to enable job {} due to: {}", id, hsce.getMessage());
+        }
+        LOGGER.traceExit();
+        return result;
+    }
+
+    /**
+     * Save a job's run parameters.
+     * @param id The job's id.
+     * @param params The jobs new parameter string. Normally will be JSON.
+     */
+    public void setJobParameters(String id, String params) {
+        LOGGER.traceEntry();
+        try {
+            String restUri = UriComponentsBuilder.fromUriString(baseUri + API_JOB_PATH)
+                    .pathSegment(URLEncoder.encode(id, StandardCharsets.UTF_8.toString()))
+                    .pathSegment("params").path("/").toUriString();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<?> entity = new HttpEntity<>(params, headers);
+            ResponseEntity<String> response = restTemplate.exchange(restUri, HttpMethod.PUT, entity,
+                    String.class);
+            if (response.getStatusCode() != HttpStatus.NO_CONTENT) {
+                LOGGER.error("Call to {} returned {}", restUri, response.getStatusCode());
+            }
+        } catch (HttpStatusCodeException | UnsupportedEncodingException hsce) {
+            LOGGER.error("Unable to update job parameters for job {} due to: {}", id, hsce.getMessage());
+        }
+        LOGGER.traceExit();
+    }
+
+    /**
      * Start a job.
      * @param id The job's id.
      */
     public void startJob(String id) {
         LOGGER.traceEntry();
-        String restUri = UriComponentsBuilder.fromUriString(baseUri + START_JOB).pathSegment(id).path("/")
-                .toUriString();
         try {
+            String restUri = UriComponentsBuilder.fromUriString(baseUri + START_JOB)
+                    .pathSegment(URLEncoder.encode(id, StandardCharsets.UTF_8.toString())).path("/")
+                    .toUriString();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<?> entity = new HttpEntity<>(null, headers);
@@ -107,7 +194,7 @@ public class SchedulingClient {
             if (response.getStatusCode() != HttpStatus.OK) {
                 LOGGER.error("Call to {} returned {}", restUri, response.getStatusCode());
             }
-        } catch (HttpStatusCodeException hsce) {
+        } catch (HttpStatusCodeException | UnsupportedEncodingException hsce) {
             LOGGER.error("Unable to start job {} due to: {}", id, hsce.getMessage());
         }
         LOGGER.traceExit();
@@ -119,9 +206,10 @@ public class SchedulingClient {
      */
     public void enableJob(String id) {
         LOGGER.traceEntry();
-        String restUri = UriComponentsBuilder.fromUriString(baseUri + ENABLE_JOB).pathSegment(id).path("/")
-                .toUriString();
         try {
+            String restUri = UriComponentsBuilder.fromUriString(baseUri + ENABLE_JOB)
+                    .pathSegment(URLEncoder.encode(id, StandardCharsets.UTF_8.toString())).path("/")
+                    .toUriString();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<?> entity = new HttpEntity<>(null, headers);
@@ -130,7 +218,7 @@ public class SchedulingClient {
             if (response.getStatusCode() != HttpStatus.OK) {
                 LOGGER.error("Call to {} returned {}", restUri, response.getStatusCode());
             }
-        } catch (HttpStatusCodeException hsce) {
+        } catch (HttpStatusCodeException | UnsupportedEncodingException hsce) {
             LOGGER.error("Unable to enable job {} due to: {}", id, hsce.getMessage());
         }
         LOGGER.traceExit();
@@ -142,9 +230,10 @@ public class SchedulingClient {
      */
     public void disableJob(String id) {
         LOGGER.traceEntry();
-        String restUri = UriComponentsBuilder.fromUriString(baseUri + DISABLE_JOB).pathSegment(id).path("/")
-                .toUriString();
         try {
+            String restUri = UriComponentsBuilder.fromUriString(baseUri + DISABLE_JOB)
+                    .pathSegment(URLEncoder.encode(id, StandardCharsets.UTF_8.toString())).path("/")
+                    .toUriString();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<?> entity = new HttpEntity<>(null, headers);
@@ -153,7 +242,7 @@ public class SchedulingClient {
             if (response.getStatusCode() != HttpStatus.OK) {
                 LOGGER.error("Call to {} returned {}", restUri, response.getStatusCode());
             }
-        } catch (HttpStatusCodeException hsce) {
+        } catch (HttpStatusCodeException | UnsupportedEncodingException hsce) {
             LOGGER.error("Unable to disable job {} due to: {}", id, hsce.getMessage());
         }
         LOGGER.traceExit();
@@ -183,15 +272,18 @@ public class SchedulingClient {
      */
     public void deleteJob(String id) {
         LOGGER.traceEntry();
-        String restUri = UriComponentsBuilder.fromUriString(baseUri + API_JOB_PATH).pathSegment(id).toUriString();
         String result = null;
         try {
+            String restUri = UriComponentsBuilder.fromUriString(baseUri + API_JOB_PATH)
+                    .pathSegment(URLEncoder.encode(id, StandardCharsets.UTF_8.toString())).toUriString();
             HttpEntity<?> entity = new HttpEntity<>(null);
-            ResponseEntity<Void> response = restTemplate.exchange(restUri, HttpMethod.DELETE, entity, Void.class);
+            ResponseEntity<Void> response =
+                    restTemplate.exchange(restUri,
+                    HttpMethod.DELETE, entity, Void.class);
             if (response.getStatusCode() != HttpStatus.OK) {
                 LOGGER.error("Unable to delete job {}", id);
             }
-        } catch (HttpStatusCodeException hsce) {
+        } catch (HttpStatusCodeException | UnsupportedEncodingException hsce) {
             LOGGER.error("Unable to delete job {} due to: {}", id, hsce.getMessage());
         }
         LOGGER.traceExit();
@@ -230,10 +322,12 @@ public class SchedulingClient {
      */
     public JobStat getJobExecutionStats(String executionId) {
         LOGGER.traceEntry();
-        String restUri = UriComponentsBuilder.fromUriString(baseUri + API_JOB_PATH)
-                .pathSegment("executions").pathSegment(executionId).path("/").toUriString();
         JobStat result = null;
         try {
+            String restUri = UriComponentsBuilder.fromUriString(baseUri + API_JOB_PATH)
+                    .pathSegment("executions")
+                    .pathSegment(URLEncoder.encode(executionId, StandardCharsets.UTF_8.toString()))
+                    .path("/").toUriString();
             HttpHeaders headers = new HttpHeaders();
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
             HttpEntity<?> entity = new HttpEntity<>(headers);
@@ -241,7 +335,7 @@ public class SchedulingClient {
             if (response.getStatusCode() != HttpStatus.OK) {
                 LOGGER.error("Unable to retrieve job statistics for job with execution id {}", executionId);
             }
-        } catch (HttpStatusCodeException hsce) {
+        } catch (HttpStatusCodeException | UnsupportedEncodingException hsce) {
             LOGGER.error("Unable to get job stats due to: {}", hsce.getMessage());
         }
         return LOGGER.traceExit(result);
@@ -254,10 +348,11 @@ public class SchedulingClient {
      */
     public List<JobStat> getAllJobExecutionStats(String jobId) {
         LOGGER.traceEntry();
-        String restUri = UriComponentsBuilder.fromUriString(baseUri + API_JOB_PATH).pathSegment(jobId)
-                .pathSegment("executions").path("/").toUriString();
         List<JobStat> result = null;
         try {
+            String restUri = UriComponentsBuilder.fromUriString(baseUri + API_JOB_PATH)
+                    .pathSegment(URLEncoder.encode(jobId, StandardCharsets.UTF_8.toString()))
+                    .pathSegment("executions").path("/").toUriString();
             HttpHeaders headers = new HttpHeaders();
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
             HttpEntity<?> entity = new HttpEntity<>(headers);
@@ -268,7 +363,7 @@ public class SchedulingClient {
             } else {
                 LOGGER.error("Unable to retrieve job statistics for job {}", jobId);
             }
-        } catch (HttpStatusCodeException hsce) {
+        } catch (HttpStatusCodeException | UnsupportedEncodingException hsce) {
             LOGGER.error("Unable to get job stats due to: {}", hsce.getMessage());
         }
         LOGGER.traceExit();
@@ -280,22 +375,25 @@ public class SchedulingClient {
      * @param executionId The job execution's id.
      * @param status The new job status.
      */
-    public void updateJobExecutionStatus(String executionId, JobStatus status) {
+    public void updateJobExecutionStatus(String jobId, String executionId, JobStatus status) {
         LOGGER.traceEntry();
-        String restUri = UriComponentsBuilder.fromUriString(baseUri + API_JOB_PATH)
-                .pathSegment("executions").pathSegment(executionId).path("/").toUriString();
         try {
+            String restUri = UriComponentsBuilder.fromUriString(baseUri + API_JOB_PATH)
+                    .pathSegment(URLEncoder.encode(jobId, StandardCharsets.UTF_8.toString())).pathSegment("executions")
+                    .pathSegment(URLEncoder.encode(executionId, StandardCharsets.UTF_8.toString())).path("/")
+                    .toUriString();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
             HttpEntity<?> entity = new HttpEntity<>(status, headers);
-            ResponseEntity<Void> response = restTemplate.exchange(restUri, HttpMethod.POST, entity,
+            ResponseEntity<Void> response = restTemplate.exchange(restUri, HttpMethod.PUT, entity,
                     Void.class);
             if (response.getStatusCode() != HttpStatus.NO_CONTENT) {
                 LOGGER.error("Call to {} returned {}", restUri, response.getStatusCode());
             }
-        } catch (HttpStatusCodeException hsce) {
-            LOGGER.error("Unable to update job status due to: {}", hsce.getMessage());
+        } catch (HttpStatusCodeException | UnsupportedEncodingException hsce) {
+            LOGGER.error("Unable to update job execution {} for status for job {} due to: {}",
+                    executionId, jobId, hsce.getMessage());
         }
         LOGGER.traceExit();
     }

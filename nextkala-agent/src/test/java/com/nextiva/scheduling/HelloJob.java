@@ -20,7 +20,7 @@ package com.nextiva.scheduling;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.nextiva.scheduling.agent.ScheduledJob;
+import com.nextiva.scheduling.agent.AbstractScheduledJob;
 import com.nextiva.scheduling.agent.annotation.Job;
 
 
@@ -28,11 +28,11 @@ import com.nextiva.scheduling.agent.annotation.Job;
  * Test job.
  */
 @Job("Hello")
-public class HelloJob implements ScheduledJob {
-    private static Logger LOGGER = LogManager.getLogger(HelloJob.class);
+public class HelloJob extends AbstractScheduledJob {
+    private static final Logger LOGGER = LogManager.getLogger(HelloJob.class);
 
     @Override
-    public int executeJob(String jobParams) {
+    public int executeJob(String jobId, String executionId, String jobParams) {
         LOGGER.debug("Executing job Hello with params: {}", jobParams);
         return 0;
     }
