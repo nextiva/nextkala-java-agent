@@ -26,6 +26,7 @@ import javax.validation.Valid;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nextiva.scheduling.agent.ScheduledJob;
-import com.nextiva.scheduling.agent.SchedulingClient;
+import com.nextiva.scheduling.agent.SchedulerClient;
 import com.nextiva.scheduling.api.enums.JobStatus;
 
 import io.swagger.annotations.ApiOperation;
@@ -59,7 +60,7 @@ public class ScheduledJobController {
     private Map<String, ScheduledJob> scheduledJobMap;
 
     @Autowired
-    private SchedulingClient schedulingClient;
+    private SchedulerClient schedulingClient;
 
     @PreDestroy
     private void shutdown() {
@@ -96,7 +97,9 @@ public class ScheduledJobController {
             @RequestHeader(name = "NextKala-RunId", required = true) String runId) {
         ScheduledJob scheduledJob = scheduledJobMap.get(jobName);
         if (scheduledJob != null) {
-            executorService.submit(new Agent(jobName, jobParams, jobId, runId, scheduledJob, schedulingClient));
+            Map<String, String> threadContext = ThreadContext.getContext();
+            executorService.submit(new Agent(jobName, jobParams, jobId, runId, scheduledJob, schedulingClient,
+                    threadContext));
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } else {
             LOGGER.error("Unable to locate job named {}", jobName);
@@ -135,21 +138,24 @@ public class ScheduledJobController {
         private final String jobId;
         private final String executionId;
         private final String jobName;
-        private final SchedulingClient client;
+        private final SchedulerClient client;
+        private final Map<String, String> threadContext;
 
         public Agent(String name, String jobParams, String jobId, String executionId, ScheduledJob job,
-                SchedulingClient client) {
+                SchedulerClient client, Map<String, String> threadContext) {
             this.jobParams = jobParams;
             this.jobId = jobId;
             this.executionId = executionId;
             this.job = job;
             this.jobName = name;
             this.client = client;
+            this.threadContext = threadContext;
         }
 
         public void run() {
             try {
                 LOGGER.info("Starting job {}", jobName);
+                ThreadContext.putAll(threadContext);
                 client.updateJobExecutionStatus(jobId, executionId, JobStatus.RUNNING);
                 int status = job.executeJob(jobId, executionId, jobParams);
                 client.updateJobExecutionStatus(jobId, executionId,
@@ -164,6 +170,8 @@ public class ScheduledJobController {
                     LOGGER.warn("Unable to update job status for job execution {} due to {}", executionId,
                             ex.getMessage());
                 }
+            } finally {
+                ThreadContext.clearMap();
             }
         }
     }

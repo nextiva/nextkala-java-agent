@@ -19,28 +19,30 @@ package com.nextiva.scheduling.agent;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.nextiva.scheduling.api.Scheduler;
+
 /**
  * Class Description goes here.
  */
 public abstract class AbstractScheduledJob implements ScheduledJob {
 
-    private SchedulingClient schedulingClient;
+    private Scheduler scheduler;
 
     /**
-     * Sets the SchedulingClient.
-     * @param client The Scheduling Client.
+     * Sets the Scheduler.
+     * @param scheduler The Scheduler.
      */
     @Autowired
-    public final void setSchedulingClient(SchedulingClient client) {
-        this.schedulingClient = client;
+    public final void setScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
     }
 
     /**
      * Retrieve the scheduling client.
      * @return the SchedulingClient.
      */
-    protected SchedulingClient getSchedulingClient() {
-        return schedulingClient;
+    protected Scheduler getScheduler() {
+        return scheduler;
     }
 
     /**
@@ -49,6 +51,16 @@ public abstract class AbstractScheduledJob implements ScheduledJob {
      * @param jobParams The new job parameters.
      */
     protected void updateJobParams(String jobId, String jobParams) {
-        schedulingClient.setJobParameters(jobId, jobParams);
+        scheduler.setJobParameters(jobId, jobParams, null);
+    }
+
+    /**
+     * Update the job's parameters.
+     * @param jobId The job's id.
+     * @param jobParams The new job parameters.
+     * @param token The OAuth token.
+     */
+    protected void updateJobParams(String jobId, String jobParams, String token) {
+        scheduler.setJobParameters(jobId, jobParams, token);
     }
 }
