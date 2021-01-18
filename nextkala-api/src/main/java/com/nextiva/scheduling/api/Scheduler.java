@@ -15,7 +15,7 @@
  * limitations under the license.
  */
 
-package com.nextiva.scheduling.agent;
+package com.nextiva.scheduling.api;
 
 import java.util.List;
 
